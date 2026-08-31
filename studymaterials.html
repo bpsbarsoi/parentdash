@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduCloud Studio</title>
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #080c14;
+      color: #e2e8f0;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .card-dark {
+      background-color: #0f172a;
+      border: 1px solid #1e293b;
+    }
+    .card-glow {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      transition: all 0.2s ease-in-out;
+    }
+    .card-glow:hover {
+      border-color: #3b82f6;
+    }
+    .cat-btn.active {
+      background-color: #2563eb !important;
+      color: #ffffff !important;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-6 max-w-4xl mx-auto space-y-6">
+
+  <!-- 1. Header & Search Bar -->
+  <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-2xl text-white shadow-lg shadow-purple-500/30">
+        🚀
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-white tracking-wide">BARSOI PUBLIC SCHOOL</h1>
+        <p class="text-xs text-slate-400">Digital Learning Resources Hub</p>
+      </div>
+    </div>
+
+    <!-- Search Box -->
+    <div class="relative w-full md:w-72">
+      <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+      <input 
+        type="text" 
+        id="searchInput" 
+        oninput="filterResources()"
+        placeholder="Search resources..." 
+        class="w-full bg-[#0d1322] border border-blue-900/60 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 transition"
+      />
+    </div>
+  </div>
+
+  <!-- 2. Dashboard Stats Cards (Clickable to Filter Items) -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div onclick="filterCategory('all')" class="card-dark rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:border-blue-500 transition">
+      <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-xl">📚</div>
+      <div>
+        <h4 class="text-lg font-bold text-white" id="stat-total">0</h4>
+        <p class="text-xs text-slate-400">Total Items</p>
+      </div>
+    </div>
+
+    <div onclick="filterCategory('pdf')" class="card-dark rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:border-blue-500 transition">
+      <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-xl">📄</div>
+      <div>
+        <h4 class="text-lg font-bold text-white" id="stat-pdf">0</h4>
+        <p class="text-xs text-slate-400">PDFs & Notes</p>
+      </div>
+    </div>
+
+    <div onclick="filterCategory('video')" class="card-dark rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:border-blue-500 transition">
+      <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-xl">🎬</div>
+      <div>
+        <h4 class="text-lg font-bold text-white" id="stat-video">0</h4>
+        <p class="text-xs text-slate-400">Video Lectures</p>
+      </div>
+    </div>
+
+    <div onclick="filterCategory('assignment')" class="card-dark rounded-2xl p-4 flex items-center gap-3 cursor-pointer hover:border-blue-500 transition">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-xl">📝</div>
+      <div>
+        <h4 class="text-lg font-bold text-white" id="stat-assignments">0</h4>
+        <p class="text-xs text-slate-400">Assignments</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. NCERT Books Banner -->
+  <a href="https://ncert.nic.in/textbook.php" target="_blank" class="block">
+    <div class="card-dark rounded-2xl p-4 border border-amber-500/30 bg-amber-500/5 flex items-center justify-between hover:border-amber-500/70 transition cursor-pointer">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center text-2xl">
+          📚
+        </div>
+        <div>
+          <h3 class="font-bold text-white text-base">NCERT Books</h3>
+          <p class="text-xs text-slate-400">Official Portal (E-Books & Textbooks)</p>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- 4. Category Filter Tabs -->
+  <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+    <button id="btn-all" onclick="filterCategory('all')" class="cat-btn active flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-medium hover:bg-slate-700 transition">
+      ✨ All Items
+    </button>
+    <button id="btn-pdf" onclick="filterCategory('pdf')" class="cat-btn flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-medium hover:bg-slate-700 transition">
+      📄 PDFs & Notes
+    </button>
+    <button id="btn-video" onclick="filterCategory('video')" class="cat-btn flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-medium hover:bg-slate-700 transition">
+      🎬 Video Lectures
+    </button>
+    <button id="btn-assignment" onclick="filterCategory('assignment')" class="cat-btn flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-medium hover:bg-slate-700 transition">
+      📝 Assignments
+    </button>
+  </div>
+
+  <!-- 5. Dynamic Resources Grid -->
+  <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="text-slate-400 text-sm col-span-2 text-center py-6">
+      <i class="fa-solid fa-spinner fa-spin mr-2"></i> Loading resources...
+    </div>
+  </div>
+
+  <!-- JavaScript Code -->
+  <script>
+    let rawSheetData = [];
+    let currentCategory = 'all';
+
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx3xVmlskgXDm355oNXZ90GL-ry3bgIovPUEYtKFEUZEDXGhlVgRcBj-4E5DyMIA5pn/exec";
+
+    async function fetchResources() {
+      try {
+        const response = await fetch(WEB_APP_URL);
+        const data = await response.json();
+        rawSheetData = data;
+        renderCards();
+        updateStats();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        document.getElementById('cards-container').innerHTML = `<div class="text-red-400 text-sm col-span-2 text-center py-6">Data load karne me problem aayi.</div>`;
+      }
+    }
+
+    function renderCards() {
+      const container = document.getElementById('cards-container');
+      const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+      container.innerHTML = '';
+
+      if (!rawSheetData || rawSheetData.length === 0) {
+        container.innerHTML = `<div class="text-slate-400 text-sm col-span-2 text-center py-6">Koi data nahi mila.</div>`;
+        return;
+      }
+
+      let count = 0;
+
+      rawSheetData.forEach(row => {
+        const itemClass = row[0] ? String(row[0]) : '';
+        const subject   = row[1] ? String(row[1]) : '';
+        const title     = row[2] ? String(row[2]) : 'Untitled Resource';
+        const type      = row[3] ? String(row[3]) : 'PDF';
+        const link      = row[4] ? String(row[4]) : '#';
+
+        const matchesCategory = (currentCategory === 'all') || (type.toLowerCase().includes(currentCategory));
+        const matchesSearch = searchVal === '' || 
+                              title.toLowerCase().includes(searchVal) || 
+                              subject.toLowerCase().includes(searchVal) || 
+                              itemClass.toLowerCase().includes(searchVal) ||
+                              type.toLowerCase().includes(searchVal);
+
+        if (matchesCategory && matchesSearch) {
+          count++;
+
+          // Dynamic Button Text & Icon Logic
+          const typeLower = type.toLowerCase();
+          let btnText = `Read ${type}`;
+          let iconClass = "fa-file-pdf";
+          let btnIcon = "fa-book-open";
+
+          if (typeLower.includes("video") || typeLower.includes("lecture")) {
+            btnText = "Watch Video";
+            iconClass = "fa-video";
+            btnIcon = "fa-play";
+          } else if (typeLower.includes("assignment")) {
+            btnText = "Open Assignment";
+            iconClass = "fa-pen-to-square";
+            btnIcon = "fa-arrow-up-right-from-square";
+          } else {
+            btnText = `Read PDF`;
+            iconClass = "fa-file-pdf";
+            btnIcon = "fa-book-open";
+          }
+
+          const card = document.createElement('div');
+          card.className = "card-glow rounded-2xl p-5 border border-slate-800 flex flex-col justify-between space-y-4";
+
+          card.innerHTML = `
+            <div>
+              <!-- Top Row -->
+              <div class="flex items-center justify-between text-xs font-semibold mb-3">
+                <span class="px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wider flex items-center gap-1.5">
+                  <i class="fa-solid ${iconClass}"></i> ${type}
+                </span>
+                <span class="text-slate-400">
+                  <strong class="text-blue-400 font-medium">${itemClass}</strong> • ${subject}
+                </span>
+              </div>
+
+              <!-- Title -->
+              <h3 class="text-lg font-bold text-white leading-snug">
+                ${title}
+              </h3>
+            </div>
+
+            <!-- Bottom Row -->
+            <div class="flex items-center justify-between pt-3 border-t border-slate-800/60">
+              <span class="text-xs text-slate-400">Ready to Access</span>
+              <a href="${link}" target="_blank" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-indigo-600/30 flex items-center gap-2">
+                <i class="fa-solid ${btnIcon}"></i> ${btnText}
+              </a>
+            </div>
+          `;
+          container.appendChild(card);
+        }
+      });
+
+      if (count === 0) {
+        container.innerHTML = `<div class="text-slate-400 text-sm col-span-2 text-center py-6">Koi matching item nahi mila.</div>`;
+      }
+    }
+
+    function updateStats() {
+      document.getElementById('stat-total').innerText = rawSheetData.length;
+      document.getElementById('stat-pdf').innerText = rawSheetData.filter(r => (r[3] ? String(r[3]) : '').toLowerCase().includes('pdf')).length;
+      document.getElementById('stat-video').innerText = rawSheetData.filter(r => (r[3] ? String(r[3]) : '').toLowerCase().includes('video')).length;
+      document.getElementById('stat-assignments').innerText = rawSheetData.filter(r => (r[3] ? String(r[3]) : '').toLowerCase().includes('assignment')).length;
+    }
+
+    function filterResources() {
+      renderCards();
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`btn-${cat}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      renderCards();
+    }
+
+    fetchResources();
+  </script>
+</body>
+</html>
