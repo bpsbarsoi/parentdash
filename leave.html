@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leave Application | Barsoi Public School</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --secondary: #2563eb;
+      --secondary-hover: #1d4ed8;
+      --bg-gradient: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+    .main-wrapper {
+      width: 100%;
+      max-width: 500px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+    }
+    .school-header {
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      color: white;
+      text-align: center;
+      padding: 26px 20px;
+    }
+    .school-header h1 { font-size: 18px; font-weight: 800; text-transform: uppercase; margin-bottom: 4px; }
+    .school-header p { font-size: 12px; opacity: 0.85; font-weight: 500; }
+    .content-body { padding: 24px; }
+    .portal-title { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    
+    .form-group { display: flex; flex-direction: column; margin-bottom: 14px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    
+    label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    input, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      font-size: 13px;
+      outline: none;
+      background: #f8fafc;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all 0.2s;
+    }
+    input:focus, textarea:focus { border-color: var(--secondary); background: #fff; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
+    textarea { resize: none; height: 80px; }
+
+    /* Student Stats Box */
+    .stats-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 12px; margin-bottom: 16px; display: none; }
+    .stats-box h4 { font-size: 11px; text-transform: uppercase; color: #64748b; margin-bottom: 8px; text-align: center; font-weight: 800; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; }
+    .stat-item { background: white; padding: 8px 4px; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .stat-item span { display: block; font-size: 16px; font-weight: 800; }
+    .stat-item p { font-size: 9px; font-weight: 700; color: #64748b; margin-top: 2px; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: var(--secondary);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 6px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    .btn-submit:hover { background: var(--secondary-hover); }
+
+    .btn-check {
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-check:hover { background: #1e293b; }
+
+    .footer-note { text-align: center; font-size: 11px; color: var(--text-muted); padding: 14px; border-top: 1px solid var(--border-color); background: #f8fafc; }
+  </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+  <div class="school-header">
+    <h1>Barsoi Public School</h1>
+    <p>Student Leave Application Portal</p>
+  </div>
+
+  <div class="content-body">
+    <div class="portal-title">
+      <span>Apply for Leave</span>
+      <button class="btn-check" onclick="checkLeaveStatus()">Check Status</button>
+    </div>
+    
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Class Name</label>
+        <input type="text" id="className" placeholder="e.g. 8th" oninput="fetchStudentStats()">
+      </div>
+      <div class="form-group">
+        <label>Roll Number</label>
+        <input type="text" id="rollNo" placeholder="e.g. 24" oninput="fetchStudentStats()">
+      </div>
+    </div>
+
+    <!-- Live Yearly Leave Summary Box -->
+    <div id="statsBox" class="stats-box">
+      <h4>📊 Academic Leave Record Summary</h4>
+      <div class="stats-grid">
+        <div class="stat-item" style="border-bottom: 3px solid #16a34a;">
+          <span id="stApproved" style="color: #16a34a;">0</span>
+          <p>APPROVED</p>
+        </div>
+        <div class="stat-item" style="border-bottom: 3px solid #dc2626;">
+          <span id="stRejected" style="color: #dc2626;">0</span>
+          <p>REJECTED</p>
+        </div>
+        <div class="stat-item" style="border-bottom: 3px solid #d97706;">
+          <span id="stPending" style="color: #d97706;">0</span>
+          <p>PENDING</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Student Name</label>
+      <input type="text" id="studentName" placeholder="Full Name">
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>From Date</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="form-group">
+        <label>To Date</label>
+        <input type="date" id="toDate">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Reason for Leave</label>
+      <textarea id="reason" placeholder="State reason for leave..."></textarea>
+    </div>
+
+    <button class="btn-submit" onclick="submitLeave()">Submit Application</button>
+  </div>
+
+  <div class="footer-note">© Barsoi Public School • Secure Portal</div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1TSEiT0v18_nC1VlIYamra-nGcXWfTeN_A2IM6VcbBBAJhkt1GdodMrG2Wl6Rx3P1/exec";
+
+  function formatDateDDMMYYYY(dateStr) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  let statsTimer;
+  function fetchStudentStats() {
+    clearTimeout(statsTimer);
+    const cls = document.getElementById("className").value.trim();
+    const roll = document.getElementById("rollNo").value.trim();
+    const statsBox = document.getElementById("statsBox");
+
+    if (!cls || !roll) {
+      statsBox.style.display = "none";
+      return;
+    }
+
+    statsTimer = setTimeout(() => {
+      fetch(`${SCRIPT_URL}?action=getStudentStats&className=${encodeURIComponent(cls)}&rollNo=${encodeURIComponent(roll)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success" && data.stats) {
+            document.getElementById("stApproved").innerText = data.stats.approved;
+            document.getElementById("stRejected").innerText = data.stats.rejected;
+            document.getElementById("stPending").innerText = data.stats.pending;
+            statsBox.style.display = "block";
+          }
+        })
+        .catch(err => console.log("Error fetching stats:", err));
+    }, 400);
+  }
+
+  function submitLeave() {
+    const className = document.getElementById("className").value.trim();
+    const rollNo = document.getElementById("rollNo").value.trim();
+    const studentName = document.getElementById("studentName").value.trim();
+    const fromDate = document.getElementById("fromDate").value;
+    const toDate = document.getElementById("toDate").value;
+    const reason = document.getElementById("reason").value.trim();
+
+    if (!className || !rollNo || !studentName || !fromDate || !toDate || !reason) {
+      Swal.fire('Incomplete Details', 'Please fill in all mandatory fields.', 'warning');
+      return;
+    }
+
+    Swal.fire({ title: 'Submitting Application...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+    const params = new URLSearchParams({
+      action: "applyLeave",
+      className: className,
+      rollNo: rollNo,
+      studentName: studentName,
+      fromDate: fromDate,
+      toDate: toDate,
+      reason: reason
+    });
+
+    fetch(`${SCRIPT_URL}?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        Swal.close();
+        if (data.status === "success") {
+          Swal.fire('Submitted!', 'Your leave application has been submitted successfully.', 'success');
+          document.getElementById("className").value = "";
+          document.getElementById("rollNo").value = "";
+          document.getElementById("studentName").value = "";
+          document.getElementById("fromDate").value = "";
+          document.getElementById("toDate").value = "";
+          document.getElementById("reason").value = "";
+          document.getElementById("statsBox").style.display = "none";
+        } else {
+          Swal.fire('Submission Failed', 'An error occurred while submitting your application.', 'error');
+        }
+      })
+      .catch(err => {
+        Swal.close();
+        Swal.fire('Server Error', 'Unable to connect to the server.', 'error');
+      });
+  }
+
+  function checkLeaveStatus() {
+    const className = document.getElementById("className").value.trim();
+    const rollNo = document.getElementById("rollNo").value.trim();
+    const studentName = document.getElementById("studentName").value.trim();
+
+    if (!className || !rollNo || !studentName) {
+      Swal.fire('Missing Information', 'Please enter Class Name, Roll Number, and Student Name to check status.', 'info');
+      return;
+    }
+
+    Swal.fire({ title: 'Checking Application Status...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+    const params = new URLSearchParams({
+      action: "checkStatus",
+      className: className,
+      rollNo: rollNo,
+      studentName: studentName
+    });
+
+    fetch(`${SCRIPT_URL}?${params.toString()}`)
+      .then(res => res.json())
+      .then(data => {
+        Swal.close();
+        if (data.status === "success") {
+          let statusColor = '#d97706';
+          if (data.leaveStatus === 'Approved') statusColor = '#16a34a';
+          if (data.leaveStatus === 'Rejected') statusColor = '#dc2626';
+
+          let formattedFrom = formatDateDDMMYYYY(data.fromDate);
+          let formattedTo = formatDateDDMMYYYY(data.toDate);
+
+          let remarkHtml = data.remark ? `<br><b>Admin Remark:</b> <span style="color:#2563eb;">${data.remark}</span>` : '';
+
+          Swal.fire({
+            title: 'Application Status',
+            html: `<b>Status:</b> <span style="color:${statusColor}; font-size:16px;">${data.leaveStatus}</span><br><br>
+                   <small><b>Dates:</b> ${formattedFrom} to ${formattedTo}<br><b>Reason:</b> ${data.reason}${remarkHtml}</small>`,
+            icon: data.leaveStatus === 'Approved' ? 'success' : (data.leaveStatus === 'Rejected' ? 'error' : 'info')
+          });
+        } else {
+          Swal.fire('Record Not Found', 'No leave application found matching these details.', 'warning');
+        }
+      })
+      .catch(err => {
+        Swal.close();
+        Swal.fire('Server Error', 'Unable to connect to the server.', 'error');
+      });
+  }
+</script>
+</body>
+</html>
