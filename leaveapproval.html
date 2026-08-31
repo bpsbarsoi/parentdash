@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Leave Dashboard | Barsoi Public School</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --secondary: #2563eb;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+    * { box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 0; }
+    body { background: var(--bg-gradient); color: var(--text-main); min-height: 100vh; padding: 20px; }
+    
+    .container { max-width: 1050px; margin: 0 auto; background: var(--card-bg); border-radius: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
+    .header { background: #1e3a8a; color: white; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 18px; font-weight: 800; text-transform: uppercase; }
+    
+    .header-btns { display: flex; gap: 8px; }
+    .btn-header { background: rgba(255,255,255,0.2); border: none; color: white; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; }
+    .btn-excel { background: #16a34a; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 12px; }
+
+    /* Analytics Cards Grid */
+    .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; padding: 20px 20px 5px 20px; }
+    .stat-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; padding: 15px; text-align: center; }
+    .stat-card h3 { font-size: 24px; font-weight: 800; margin-top: 4px; }
+    .stat-card p { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+
+    .content { padding: 20px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 750px; }
+    th { background: #f1f5f9; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); padding: 12px; text-align: left; }
+    td { padding: 12px; font-size: 13px; border-bottom: 1px solid #f1f5f9; font-weight: 500; }
+
+    .btn-approve { background: var(--success); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
+    .btn-reject { background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; margin-left: 4px; }
+    
+    .btn-whatsapp { background: #25D366; color: white; text-decoration: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; display: inline-block; margin-top: 4px; }
+
+    .badge-approved { color: var(--success); font-weight: 700; background: #f0fdf4; padding: 4px 8px; border-radius: 6px; }
+    .badge-rejected { color: var(--danger); font-weight: 700; background: #fef2f2; padding: 4px 8px; border-radius: 6px; }
+    .badge-pending { color: var(--warning); font-weight: 700; background: #fffbeb; padding: 4px 8px; border-radius: 6px; }
+    
+    /* Warning Badge for Excessive Leaves */
+    .badge-warning-leave { color: #b91c1c; font-weight: 800; background: #fee2e2; padding: 2px 6px; border-radius: 4px; font-size: 10px; display: inline-block; margin-top: 3px; border: 1px solid #fca5a5; }
+
+    .remark-text { font-size: 11px; color: #64748b; margin-top: 4px; font-style: italic; }
+  </style>
+</head>
+<body onload="initDashboard()">
+
+<div class="container">
+  <div class="header">
+    <h1>Admin Analytics & Leave Dashboard</h1>
+    <div class="header-btns">
+      <button class="btn-excel" onclick="exportToExcel()">📊 Export Excel</button>
+      <button class="btn-header" onclick="loadLeaveRequests(true)">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <div class="analytics-grid">
+    <div class="stat-card" style="border-top: 4px solid var(--primary);">
+      <p>Total Applications</p>
+      <h3 id="statTotal" style="color: var(--primary);">0</h3>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--warning);">
+      <p>Pending Requests</p>
+      <h3 id="statPending" style="color: var(--warning);">0</h3>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--success);">
+      <p>Approved Leaves</p>
+      <h3 id="statApproved" style="color: var(--success);">0</h3>
+    </div>
+    <div class="stat-card" style="border-top: 4px solid var(--danger);">
+      <p>Rejected Leaves</p>
+      <h3 id="statRejected" style="color: var(--danger);">0</h3>
+    </div>
+  </div>
+
+  <div class="content">
+    <table>
+      <thead>
+        <tr>
+          <th>Student Details</th>
+          <th>Dates</th>
+          <th>Reason & Remark</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="leaveTableBody">
+        <tr><td colspan="5" style="text-align: center; color: #64748b;">Loading applications...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1TSEiT0v18_nC1VlIYamra-nGcXWfTeN_A2IM6VcbBBAJhkt1GdodMrG2Wl6Rx3P1/exec";
+  let globalLeavesData = [];
+
+  function formatDateDDMMYYYY(dateStr) {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+  }
+
+  function initDashboard() {
+    const cachedLeaves = localStorage.getItem("cached_leaves");
+    if (cachedLeaves) {
+      globalLeavesData = JSON.parse(cachedLeaves);
+      renderTable(globalLeavesData);
+      updateAnalytics(globalLeavesData);
+    }
+    loadLeaveRequests(false);
+  }
+
+  function loadLeaveRequests(showLoader = false) {
+    const tbody = document.getElementById("leaveTableBody");
+    if (showLoader || !localStorage.getItem("cached_leaves")) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">Loading applications...</td></tr>`;
+    }
+
+    fetch(`${SCRIPT_URL}?action=getLeaves&_t=${new Date().getTime()}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success" && data.leaves) {
+          globalLeavesData = data.leaves;
+          localStorage.setItem("cached_leaves", JSON.stringify(data.leaves));
+          renderTable(data.leaves);
+          updateAnalytics(data.leaves);
+        } else {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">Koi application nahi hai.</td></tr>`;
+        }
+      })
+      .catch(err => {
+        if (!localStorage.getItem("cached_leaves")) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Failed to load data.</td></tr>`;
+        }
+      });
+  }
+
+  function updateAnalytics(leaves) {
+    let total = leaves.length;
+    let pending = 0, approved = 0, rejected = 0;
+
+    leaves.forEach(item => {
+      let st = (item.status || 'Pending').toLowerCase();
+      if (st === 'approved') approved++;
+      else if (st === 'rejected') rejected++;
+      else pending++;
+    });
+
+    document.getElementById("statTotal").innerText = total;
+    document.getElementById("statPending").innerText = pending;
+    document.getElementById("statApproved").innerText = approved;
+    document.getElementById("statRejected").innerText = rejected;
+  }
+
+  function renderTable(leaves) {
+    const tbody = document.getElementById("leaveTableBody");
+    tbody.innerHTML = "";
+
+    if (leaves.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">Koi application nahi hai.</td></tr>`;
+      return;
+    }
+
+    // Student Count Frequency Calculation
+    let studentFreq = {};
+    leaves.forEach(item => {
+      let key = `${item.className}_${item.rollNo}_${item.studentName}`.toLowerCase();
+      studentFreq[key] = (studentFreq[key] || 0) + 1;
+    });
+
+    leaves.forEach((item) => {
+      let tr = document.createElement("tr");
+      let currentStatus = item.status || 'Pending';
+      let statusBadge = `<span class="badge-${currentStatus.toLowerCase()}">${currentStatus}</span>`;
+      
+      let formattedFrom = formatDateDDMMYYYY(item.fromDate);
+      let formattedTo = formatDateDDMMYYYY(item.toDate);
+
+      let parentMobile = item.mobileNo ? item.mobileNo.toString().replace(/[^0-9]/g, '') : '';
+      if(parentMobile.length === 10) parentMobile = "91" + parentMobile;
+
+      let waText = encodeURIComponent(`*Barsoi Public School - Leave Notification*\n\nDear Parent,\nStudent: *${item.studentName}* (Class: ${item.className}, Roll: ${item.rollNo})\nLeave Dates: *${formattedFrom} to ${formattedTo}*\nStatus: *${currentStatus.toUpperCase()}*\nRemark: ${item.remark || 'N/A'}\n\nThank you.`);
+      let waLink = `https://wa.me/${parentMobile}?text=${waText}`;
+
+      let actionBtns = (currentStatus === 'Pending') ? `
+        <button class="btn-approve" onclick="updateStatus(${item.rowIndex}, 'Approved', '${item.studentName}', '${formattedFrom}', '${formattedTo}', '${parentMobile}')">Approve</button>
+        <button class="btn-reject" onclick="updateStatus(${item.rowIndex}, 'Rejected', '${item.studentName}', '${formattedFrom}', '${formattedTo}', '${parentMobile}')">Reject</button>
+      ` : `
+        <a href="${waLink}" target="_blank" class="btn-whatsapp">📲 Send WA Alert</a>
+      `;
+
+      let remarkHtml = item.remark ? `<div class="remark-text"><b>Admin Note:</b> ${item.remark}</div>` : '';
+
+      // Check Frequent Leave Warning (If count > 1)
+      let studentKey = `${item.className}_${item.rollNo}_${item.studentName}`.toLowerCase();
+      let leaveCount = studentFreq[studentKey] || 1;
+      let warningBadge = leaveCount > 1 ? `<br><span class="badge-warning-leave">⚠️ Frequent Leave (${leaveCount} Total)</span>` : '';
+
+      tr.innerHTML = `
+        <td>
+          <b>${item.studentName}</b> ${warningBadge}<br>
+          <small style="color:#64748b">Class: ${item.className} | Roll: ${item.rollNo}</small><br>
+          <small style="color:#2563eb;">📱 ${item.mobileNo || 'N/A'}</small>
+        </td>
+        <td><b>${formattedFrom}</b> to <b>${formattedTo}</b></td>
+        <td><b>Reason:</b> ${item.reason}${remarkHtml}</td>
+        <td>${statusBadge}</td>
+        <td>${actionBtns}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function updateStatus(rowIdx, newStatus, studentName, fromDate, toDate, parentMobile) {
+    Swal.fire({
+      title: `${newStatus} Application`,
+      text: `Reason / Remark add karein (Optional):`,
+      input: 'text',
+      inputPlaceholder: newStatus === 'Approved' ? 'e.g. Approved by Principal' : 'e.g. Valid certificate required',
+      showCancelButton: true,
+      confirmButtonText: 'Confirm & Save',
+      confirmButtonColor: newStatus === 'Approved' ? '#16a34a' : '#dc2626',
+      cancelButtonText: 'Cancel'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const adminRemark = result.value || '';
+        Swal.fire({ title: 'Updating...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+        const params = new URLSearchParams({
+          action: "updateLeaveStatus",
+          rowIndex: rowIdx,
+          status: newStatus,
+          remark: adminRemark,
+          _t: new Date().getTime()
+        });
+
+        fetch(`${SCRIPT_URL}?${params.toString()}`)
+          .then(res => res.json())
+          .then(data => {
+            Swal.close();
+            if (data.status === "success") {
+              let waText = encodeURIComponent(`*Barsoi Public School - Leave Status*\n\nDear Parent,\nStudent: *${studentName}*\nDates: *${fromDate} to ${toDate}*\nStatus: *${newStatus.toUpperCase()}*\nRemark: ${adminRemark || 'N/A'}\n\nThank you.`);
+              let waUrl = `https://wa.me/${parentMobile}?text=${waText}`;
+
+              Swal.fire({
+                title: 'Updated Successfully!',
+                text: 'The status has been updated. Do you want to send a WhatsApp message to the parent?',
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonText: '📲 Send WhatsApp',
+                cancelButtonText: 'Close'
+              }).then((waRes) => {
+                if(waRes.isConfirmed && parentMobile) {
+                  window.open(waUrl, '_blank');
+                }
+                loadLeaveRequests(false);
+              });
+            } else {
+              Swal.fire('Error', 'Update nahi ho paya.', 'error');
+            }
+          })
+          .catch(err => {
+            Swal.close();
+            Swal.fire('Error', 'Server error!', 'error');
+          });
+      }
+    });
+  }
+
+  function exportToExcel() {
+    if (globalLeavesData.length === 0) {
+      Swal.fire('No Data', 'No data for Export.', 'info');
+      return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Class,Roll No,Student Name,Mobile No,From Date,To Date,Reason,Status,Admin Remark\n";
+
+    globalLeavesData.forEach(item => {
+      let row = [
+        `"${item.className || ''}"`,
+        `"${item.rollNo || ''}"`,
+        `"${item.studentName || ''}"`,
+        `"${item.mobileNo || ''}"`,
+        `"${formatDateDDMMYYYY(item.fromDate)}"`,
+        `"${formatDateDDMMYYYY(item.toDate)}"`,
+        `"${(item.reason || '').replace(/"/g, '""')}"`,
+        `"${item.status || 'Pending'}"`,
+        `"${(item.remark || '').replace(/"/g, '""')}"`
+      ];
+      csvContent += row.join(",") + "\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `Leave_Report_Barsoi_Public_School_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+
+</body>
+</html>
